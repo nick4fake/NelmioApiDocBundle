@@ -69,7 +69,7 @@ class DunglasApiParser implements ParserInterface
     /**
      * {@inheritdoc}
      */
-    public function parse(array $item)
+    public function parse(array $item, $direction = ParserInterface::DIRECTION_READ)
     {
         list($io, $entityClass) = explode(':', $item['class'], 2);
         $resource = $this->resourceCollection->getResourceForEntity($entityClass);

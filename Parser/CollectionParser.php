@@ -40,7 +40,7 @@ class CollectionParser implements ParserInterface, PostParserInterface
      *
      * @return array
      */
-    public function parse(array $item)
+    public function parse(array $item, $direction = ParserInterface::DIRECTION_READ)
     {
         return array();
     }

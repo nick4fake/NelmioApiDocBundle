@@ -65,7 +65,7 @@ class ValidationParser implements ParserInterface, PostParserInterface
     /**
      * {@inheritdoc}
      */
-    public function parse(array $input)
+    public function parse(array $input, $direction = ParserInterface::DIRECTION_READ)
     {
         $className = $input['class'];
 

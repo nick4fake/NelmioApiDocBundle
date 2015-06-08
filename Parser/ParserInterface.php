@@ -16,6 +16,9 @@ namespace Nelmio\ApiDocBundle\Parser;
  */
 interface ParserInterface
 {
+    const DIRECTION_READ = 'read';
+    const DIRECTION_WRITE = 'write';
+
     /**
      * Return true/false whether this class supports parsing the given class.
      *
@@ -39,5 +42,5 @@ interface ParserInterface
      * @param  array $item The string type of input to parse.
      * @return array
      */
-    public function parse(array $item);
+    public function parse(array $item, $direction = ParserInterface::DIRECTION_READ);
 }

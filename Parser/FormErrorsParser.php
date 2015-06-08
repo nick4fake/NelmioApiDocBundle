@@ -30,7 +30,7 @@ class FormErrorsParser implements ParserInterface, PostParserInterface
         return isset($item['form_errors']) && $item['form_errors'] === true;
     }
 
-    public function parse(array $item)
+    public function parse(array $item, $direction = ParserInterface::DIRECTION_READ)
     {
         return array();
     }

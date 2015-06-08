@@ -87,7 +87,7 @@ class FormTypeParser implements ParserInterface
     /**
      * {@inheritdoc}
      */
-    public function parse(array $item)
+    public function parse(array $item, $direction = ParserInterface::DIRECTION_READ)
     {
         $type    = $item['class'];
         $options = $item['options'];

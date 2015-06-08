@@ -293,7 +293,10 @@ class ApiDocExtractor
             foreach ($this->getParsers($normalizedInput) as $parser) {
                 if ($parser->supports($normalizedInput)) {
                     $supportedParsers[] = $parser;
-                    $parameters         = $this->mergeParameters($parameters, $parser->parse($normalizedInput));
+                    $parameters         = $this->mergeParameters($parameters, $parser->parse(
+                        $normalizedInput,
+                        ParserInterface::DIRECTION_WRITE
+                    ));
                 }
             }
 
@@ -329,7 +332,10 @@ class ApiDocExtractor
             foreach ($this->getParsers($normalizedOutput) as $parser) {
                 if ($parser->supports($normalizedOutput)) {
                     $supportedParsers[] = $parser;
-                    $response = $this->mergeParameters($response, $parser->parse($normalizedOutput));
+                    $response = $this->mergeParameters($response, $parser->parse(
+                        $normalizedOutput,
+                        ParserInterface::DIRECTION_READ
+                    ));
                 }
             }
 
