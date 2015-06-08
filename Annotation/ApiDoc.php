@@ -25,28 +25,28 @@ class ApiDoc
      *
      * @var array
      */
-    private $requirements = array();
+    private $requirements = [];
 
     /**
      * Which views is this route used. Defaults to "Default"
      *
      * @var array
      */
-    private $views = array();
+    private $views = [];
 
     /**
      * Filters are optional parameters in the query string.
      *
      * @var array
      */
-    private $filters  = array();
+    private $filters  = [];
 
     /**
      * Parameters are data a client can send.
      *
      * @var array
      */
-    private $parameters = array();
+    private $parameters = [];
 
     /**
      * @var string
@@ -107,12 +107,33 @@ class ApiDoc
     /**
      * @var array
      */
-    private $response = array();
+    private $response = [];
 
     /**
      * @var Route
      */
-    private $route;
+    private $route;/**
+ * @return string
+ */
+    public function getRouteName()
+    {
+        return $this->routeName;
+    }
+
+    /**
+     * @param string $routeName
+     * @return $this
+     */
+    public function setRouteName($routeName)
+    {
+        $this->routeName = $routeName;
+        return $this;
+    }
+
+    /**
+     * @var string
+     */
+    private $routeName;
 
     /**
      * @var boolean
@@ -127,7 +148,7 @@ class ApiDoc
     /**
      * @var array
      */
-    private $authenticationRoles = array();
+    private $authenticationRoles = [];
 
     /**
      * @var int
@@ -142,7 +163,7 @@ class ApiDoc
     /**
      * @var array
      */
-    private $statusCodes = array();
+    private $statusCodes = [];
 
     /**
      * @var string|null
@@ -152,17 +173,17 @@ class ApiDoc
     /**
      * @var array
      */
-    private $responseMap = array();
+    private $responseMap = [];
 
     /**
      * @var array
      */
-    private $parsedResponseMap = array();
+    private $parsedResponseMap = [];
 
     /**
      * @var array
      */
-    private $tags = array();
+    private $tags = [];
 
     public function __construct(array $data)
     {
@@ -202,7 +223,7 @@ class ApiDoc
 
         if (isset($data['views'])) {
             if (! is_array($data['views'])) {
-                $data['views'] = array($data['views']);
+                $data['views'] = [$data['views']];
             }
 
             foreach ($data['views'] as $view) {
@@ -307,7 +328,7 @@ class ApiDoc
      */
     public function addStatusCode($statusCode, $description)
     {
-        $this->statusCodes[$statusCode] = !is_array($description) ? array($description) : $description;
+        $this->statusCodes[$statusCode] = !is_array($description) ? [$description] : $description;
     }
 
     /**
@@ -627,10 +648,10 @@ class ApiDoc
      */
     public function toArray()
     {
-        $data = array(
+        $data = [
             'method' => $this->method,
             'uri'    => $this->uri,
-        );
+        ];
 
         if ($host = $this->host) {
             $data['host'] = $host;
@@ -684,6 +705,10 @@ class ApiDoc
             $data['tags'] = $tags;
         }
 
+        if ($routeName = $this->routeName) {
+            $data['routeName'] = $routeName;
+        }
+
         if ($resourceDescription = $this->resourceDescription) {
             $data['resourceDescription'] = $resourceDescription;
         }
@@ -731,7 +756,7 @@ class ApiDoc
      */
     public function setResponseForStatusCode($model, $type, $statusCode = 200)
     {
-        $this->parsedResponseMap[$statusCode] = array('type' => $type, 'model' => $model);
+        $this->parsedResponseMap[$statusCode] = ['type' => $type, 'model' => $model];
         if ($statusCode == 200 && $this->response !== $model) {
             $this->response = $model;
         }

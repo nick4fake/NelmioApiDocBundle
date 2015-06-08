@@ -116,7 +116,7 @@ class ApiDocExtractor
         $resources = array();
         $excludeSections = $this->container->getParameter('nelmio_api_doc.exclude_sections');
 
-        foreach ($routes as $route) {
+        foreach ($routes as $routeName => $route) {
             if (!$route instanceof Route) {
                 throw new \InvalidArgumentException(sprintf('All elements of $routes must be instances of Route. "%s" given', gettype($route)));
             }
@@ -127,6 +127,7 @@ class ApiDocExtractor
                     $annotation && !in_array($annotation->getSection(), $excludeSections) &&
                     (in_array($view, $annotation->getViews()) || (0 === count($annotation->getViews()) && $view === ApiDoc::DEFAULT_VIEW))
                 ) {
+                    $annotation->setRouteName($routeName);
                     if ($annotation->isResource()) {
                         if ($resource = $annotation->getResource()) {
                             $resources[] = $resource;

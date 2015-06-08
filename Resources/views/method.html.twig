@@ -30,6 +30,10 @@
                     <span class="tag" {% if color_code is defined and color_code is not empty %}style="background-color:{{ color_code }};"{% endif %}>{{ tag }}</span>
                 {% endfor %}
             {%  endif %}
+
+            {% if data.routeName is defined %}
+                <i style="color: gray">{{ data.routeName }}</i>
+            {% endif %}
         </h3>
         <ul class="options">
             {% if data.description is defined %}
