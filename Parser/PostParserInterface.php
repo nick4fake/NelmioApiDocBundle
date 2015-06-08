@@ -34,5 +34,5 @@ interface PostParserInterface
      * @param  array  $parameters The previously-parsed parameters array.
      * @return array
      */
-    public function postParse(array $item, array $parameters);
+    public function postParse(array $item, array $parameters, $direction = ParserInterface::DIRECTION_READ);
 }

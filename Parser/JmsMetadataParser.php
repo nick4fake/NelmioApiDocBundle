@@ -13,13 +13,13 @@ namespace Nelmio\ApiDocBundle\Parser;
 
 use JMS\Serializer\DeserializationContext;
 use JMS\Serializer\Exclusion\GroupsExclusionStrategy;
+use JMS\Serializer\Metadata\PropertyMetadata;
+use JMS\Serializer\Metadata\VirtualPropertyMetadata;
+use JMS\Serializer\Naming\PropertyNamingStrategyInterface;
 use JMS\Serializer\SerializationContext;
 use Metadata\MetadataFactoryInterface;
 use Nelmio\ApiDocBundle\DataTypes;
 use Nelmio\ApiDocBundle\Util\DocCommentExtractor;
-use JMS\Serializer\Metadata\PropertyMetadata;
-use JMS\Serializer\Metadata\VirtualPropertyMetadata;
-use JMS\Serializer\Naming\PropertyNamingStrategyInterface;
 
 /**
  * Uses the JMS metadata factory to extract input/output model information
@@ -123,6 +123,20 @@ class JmsMetadataParser implements ParserInterface, PostParserInterface
             return $default;
         }, $reflection->getDefaultProperties());
 
+        if ($meta->discriminatorMap) {
+            $params[$meta->discriminatorFieldName] = [
+                'dataType'     => 'string',
+                'actualType'   => 'string',
+                'subType'      => null,
+                'required'     => true,
+                'default'      => $meta->discriminatorValue ?: null,
+                'description'  => 'Discriminator: ' . join(', ', array_keys($meta->discriminatorMap)),
+                'readonly'     => false,
+                'sinceVersion' => null,
+                'untilVersion' => null,
+            ];
+        }
+
         // iterate over property metadata
         foreach ($meta->propertyMetadata as $item) {
             if (!is_null($item->type)) {
@@ -174,7 +188,7 @@ class JmsMetadataParser implements ParserInterface, PostParserInterface
                 // check for nested classes with JMS metadata
                 if ($dataType['class'] && false === $dataType['primitive'] && null !== $this->factory->getMetadataForClass($dataType['class'])) {
                     $visited[] = $dataType['class'];
-                    $children  = $this->doParse($dataType['class'], $visited, $groups);
+                    $children  = $this->doParse($dataType['class'], $visited, $groups, $direction);
 
                     if ($dataType['inline']) {
                         $params = array_merge($params, $children);
@@ -264,9 +278,9 @@ class JmsMetadataParser implements ParserInterface, PostParserInterface
     /**
      * {@inheritDoc}
      */
-    public function postParse(array $input, array $parameters)
+    public function postParse(array $input, array $parameters, $direction = ParserInterface::DIRECTION_READ)
     {
-        return $this->doPostParse($parameters, [], isset($input['groups']) ? $input['groups'] : []);
+        return $this->doPostParse($parameters, [], isset($input['groups']) ? $input['groups'] : [], $direction);
     }
 
     /**
@@ -276,7 +290,7 @@ class JmsMetadataParser implements ParserInterface, PostParserInterface
      * @param  array $visited
      * @return array
      */
-    protected function doPostParse (array $parameters, array $visited = [], array $groups = [])
+    protected function doPostParse (array $parameters, array $visited = [], array $groups = [], $direction = ParserInterface::DIRECTION_READ)
     {
         foreach ($parameters as $param => $data) {
             if (isset($data['class']) && isset($data['children']) && !in_array($data['class'], $visited)) {
@@ -284,10 +298,10 @@ class JmsMetadataParser implements ParserInterface, PostParserInterface
 
                 $input = ['class' => $data['class'], 'groups' => isset($data['groups']) ? $data['groups'] : []];
                 $parameters[$param]['children'] = array_merge(
-                    $parameters[$param]['children'], $this->doPostParse($parameters[$param]['children'], $visited, $groups)
+                    $parameters[$param]['children'], $this->doPostParse($parameters[$param]['children'], $visited, $groups, $direction)
                 );
                 $parameters[$param]['children'] = array_merge(
-                    $parameters[$param]['children'], $this->doParse($input['class'], $visited, $groups)
+                    $parameters[$param]['children'], $this->doParse($input['class'], $visited, $groups, $direction)
                 );
             }
         }
