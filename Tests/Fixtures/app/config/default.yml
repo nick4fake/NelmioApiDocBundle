@@ -25,7 +25,11 @@ services:
         arguments:
             - [foo, bar]
         tags:
-            - { name: form.type, alias: dependency_type }
+            - { name: form.type, alias: dependency_type, extended_type: Nelmio\ApiDocBundle\Tests\Fixtures\Form\DependencyType }
+
+parameters:
+    domain_prod: test.com
+    domain_dev: test.dev
 
 #JMS Serializer config for testing JmsMetadataParser
 jms_serializer:

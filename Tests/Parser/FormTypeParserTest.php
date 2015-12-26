@@ -1,10 +1,22 @@
 <?php
+
+/*
+ * This file is part of the NelmioApiDocBundle.
+ *
+ * (c) Nelmio <hello@nelm.io>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace NelmioApiDocBundle\Tests\Parser;
 
 use Nelmio\ApiDocBundle\DataTypes;
 use Nelmio\ApiDocBundle\Form\Extension\DescriptionFormTypeExtension;
 use Nelmio\ApiDocBundle\Parser\FormTypeParser;
 use Nelmio\ApiDocBundle\Tests\Fixtures;
+use Nelmio\ApiDocBundle\Tests\Fixtures\Form\DependencyType;
+use Nelmio\ApiDocBundle\Util\LegacyFormHelper;
 use Symfony\Component\Form\Extension\Core\CoreExtension;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\FormFactory;
@@ -18,6 +30,34 @@ class FormTypeParserTest extends \PHPUnit_Framework_TestCase
      */
     public function testParse($typeName, $expected)
     {
+        $resolvedTypeFactory = new ResolvedFormTypeFactory();
+        $formFactoryBuilder = new FormFactoryBuilder();
+        $formFactoryBuilder->setResolvedTypeFactory($resolvedTypeFactory);
+        $formFactoryBuilder->addExtension(new CoreExtension());
+        $formFactoryBuilder->addTypeExtension(new DescriptionFormTypeExtension());
+        $formFactoryBuilder->addType(new DependencyType(array('foo')));
+        $formFactory = $formFactoryBuilder->getFormFactory();
+        $formTypeParser = new FormTypeParser($formFactory, $entityToChoice = true);
+
+        set_error_handler(array('Nelmio\ApiDocBundle\Tests\WebTestCase', 'handleDeprecation'));
+        trigger_error('test', E_USER_DEPRECATED);
+
+        $output = $formTypeParser->parse($typeName);
+        restore_error_handler();
+
+        $this->assertEquals($expected, $output);
+    }
+
+    /**
+     * Checks that we can still use FormType with required arguments without defining them as services.
+     * @dataProvider dataTestParse
+     */
+    public function testLegacyParse($typeName, $expected)
+    {
+        if (LegacyFormHelper::hasBCBreaks()) {
+            $this->markTestSkipped('Not supported on symfony 3.0.');
+        }
+
         $resolvedTypeFactory = new ResolvedFormTypeFactory();
         $formFactoryBuilder = new FormFactoryBuilder();
         $formFactoryBuilder->setResolvedTypeFactory($resolvedTypeFactory);
@@ -45,6 +85,7 @@ class FormTypeParserTest extends \PHPUnit_Framework_TestCase
         $formFactoryBuilder->setResolvedTypeFactory($resolvedTypeFactory);
         $formFactoryBuilder->addExtension(new CoreExtension());
         $formFactoryBuilder->addTypeExtension(new DescriptionFormTypeExtension());
+        $formFactoryBuilder->addType(new DependencyType(array('bar')));
         $formFactory = $formFactoryBuilder->getFormFactory();
         $formTypeParser = new FormTypeParser($formFactory, $entityToChoice = false);
 
@@ -69,19 +110,18 @@ class FormTypeParserTest extends \PHPUnit_Framework_TestCase
 
     protected function expectedData($entityToChoice)
     {
-        $entityData = array(
-            'dataType' => 'choice',
-            'actualType' => DataTypes::ENUM,
-            'subType' => null,
-            'default' => null,
-            'required' => true,
-            'description' => '',
-            'readonly' => false
+        $entityData = array_merge(
+            array(
+                'dataType' => 'choice',
+                'actualType' => DataTypes::ENUM,
+                'subType' => null,
+                'default' => null,
+                'required' => true,
+                'description' => '',
+                'readonly' => false,
+            ),
+            LegacyFormHelper::isLegacy() ? array() : array('format' => '{"foo":"bar","bazgroup":{"baz":"Buzz"}}',)
         );
-
-        if ($entityToChoice) {
-            $entityData['format'] = json_encode(array('foo' => 'bar', 'baz' => 'Buzz'));
-        }
 
         return array(
             array(
@@ -434,7 +474,7 @@ class FormTypeParserTest extends \PHPUnit_Framework_TestCase
                         'required' => true,
                         'description' => '',
                         'readonly' => false,
-                        'format' => json_encode(array('foo' => 'bar', 'baz' => 'Buzz')),
+                        'format' => '{"foo":"bar","bazgroup":{"baz":"Buzz"}}',
                     ),
                     'e1' => $entityData
                 ),

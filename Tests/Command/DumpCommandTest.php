@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the NelmioApiDocBundle.
+ *
+ * (c) Nelmio <hello@nelm.io>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace NelmioApiDocBundle\Tests\Command;
 
 use Nelmio\ApiDocBundle\Tests\WebTestCase;
@@ -12,9 +21,9 @@ class DumpCommandTest extends WebTestCase
     /**
      * @dataProvider viewProvider
      *
-     * @param string $view Command view option value
-     * @param array $expectedMethodsCount Expected resource methods count
-     * @param array $expectedMethodValues Expected resource method values
+     * @param string $view                 Command view option value
+     * @param array  $expectedMethodsCount Expected resource methods count
+     * @param array  $expectedMethodValues Expected resource method values
      */
     public function testDumpWithViewOption($view, array $expectedMethodsCount, array $expectedMethodValues)
     {
@@ -88,9 +97,9 @@ class DumpCommandTest extends WebTestCase
                     '/api/resources[0].uri' => '/api/resources.{_format}',
                     '/api/resources[1].method' => 'POST',
                     '/api/resources[1].uri' => '/api/resources.{_format}',
-                    '/api/resources[2].method' => 'GET',
+                    '/api/resources[2].method' => 'DELETE',
                     '/api/resources[2].uri' => '/api/resources/{id}.{_format}',
-                    '/api/resources[3].method' => 'DELETE',
+                    '/api/resources[3].method' => 'GET',
                     '/api/resources[3].uri' => '/api/resources/{id}.{_format}',
                 )
             ),

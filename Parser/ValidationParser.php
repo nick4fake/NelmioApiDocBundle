@@ -13,7 +13,8 @@ namespace Nelmio\ApiDocBundle\Parser;
 
 use Nelmio\ApiDocBundle\DataTypes;
 use Symfony\Component\Validator\Exception\ConstraintDefinitionException;
-use Symfony\Component\Validator\MetadataFactoryInterface;
+use Symfony\Component\Validator\Mapping\Factory\MetadataFactoryInterface;
+use Symfony\Component\Validator\MetadataFactoryInterface as LegacyMetadataFactoryInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints\Type;
 
@@ -45,10 +46,13 @@ class ValidationParser implements ParserInterface, PostParserInterface
     /**
      * Requires a validation MetadataFactory.
      *
-     * @param MetadataFactoryInterface $factory
+     * @param MetadataFactoryInterface|LegacyMetadataFactoryInterface $factory
      */
-    public function __construct(MetadataFactoryInterface $factory)
+    public function __construct($factory)
     {
+        if (!($factory instanceof MetadataFactoryInterface) && !($factory instanceof LegacyMetadataFactoryInterface)) {
+            throw new \InvalidArgumentException('Argument 1 of %s constructor must be either an instance of Symfony\Component\Validator\Mapping\Factory\MetadataFactoryInterface or Symfony\Component\Validator\MetadataFactoryInterface.');
+        }
         $this->factory = $factory;
     }
 
@@ -69,7 +73,25 @@ class ValidationParser implements ParserInterface, PostParserInterface
     {
         $className = $input['class'];
 
-        return $this->doParse($className, array());
+        $parsed = $this->doParse($className, array());
+
+        if (isset($input['name']) && !empty($input['name'])) {
+            $output = array();
+            $output[$input['name']] = array(
+                'dataType' => 'object',
+                'actualType' => 'object',
+                'class' => $className,
+                'subType' => null,
+                'required' => null,
+                'description' => null,
+                'readonly' => null,
+                'children' => $parsed
+            );
+
+            return $output;
+        }
+
+        return $parsed;
     }
 
     /**

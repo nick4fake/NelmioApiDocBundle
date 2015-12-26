@@ -12,30 +12,19 @@
 namespace Nelmio\ApiDocBundle\Tests;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase as BaseWebTestCase;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Kernel;
 
 abstract class WebTestCase extends BaseWebTestCase
 {
+    public static $container;
+
     protected function setUp()
     {
-        $this->deleteTmpDir();
-
         parent::setUp();
 
         if (version_compare(Kernel::VERSION, '2.2.0', '<')) {
             $this->markTestSkipped('Does not work with Symfony2 2.1 due to a "host" parameter in the `routing.yml` file');
         }
-    }
-
-    protected function deleteTmpDir()
-    {
-        if (!file_exists($dir = sys_get_temp_dir().'/'.Kernel::VERSION)) {
-            return;
-        }
-
-        $fs = new Filesystem();
-        $fs->remove($dir);
     }
 
     public static function handleDeprecation($errorNumber, $message, $file, $line, $context)
@@ -52,9 +41,16 @@ abstract class WebTestCase extends BaseWebTestCase
         if (!static::$kernel) {
             static::$kernel = static::createKernel($options);
         }
+
         static::$kernel->boot();
 
-        return static::$kernel->getContainer();
+        if (!static::$container) {
+            static::$container = static::$kernel->getContainer();
+        }
+
+        static::$container->set('kernel', static::$kernel);
+
+        return static::$container;
     }
 
     protected static function getKernelClass()
@@ -72,11 +68,5 @@ abstract class WebTestCase extends BaseWebTestCase
             'default',
             isset($options['debug']) ? $options['debug'] : true
         );
-    }
-
-    public function tearDown()
-    {
-        parent::tearDown();
-        $this->deleteTmpDir();
     }
 }

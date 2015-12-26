@@ -11,6 +11,7 @@
 
 namespace Nelmio\ApiDocBundle\Form\Extension;
 
+use Nelmio\ApiDocBundle\Util\LegacyFormHelper;
 use Symfony\Component\Form\AbstractTypeExtension;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
@@ -46,6 +47,9 @@ class DescriptionFormTypeExtension extends AbstractTypeExtension
         $this->configureOptions($resolver);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(array(
@@ -58,6 +62,6 @@ class DescriptionFormTypeExtension extends AbstractTypeExtension
      */
     public function getExtendedType()
     {
-        return 'form';
+        return LegacyFormHelper::getType('Symfony\Component\Form\Extension\Core\Type\FormType');
     }
 }

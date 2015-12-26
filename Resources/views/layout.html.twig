@@ -86,7 +86,7 @@
             };
 
             $(window).load(function() {
-                var id = getHash().substr(1).replace( /([:\.\[\]\{\}])/g, "\\$1");
+                var id = getHash().substr(1).replace( /([:\.\[\]\{\}|])/g, "\\$1");
                 var elem = $('#' + id);
                 if (elem.length) {
                     setTimeout(function() {
@@ -471,7 +471,6 @@
 
 
 
-
                     // retrieve the additional headers to send
                     $('.headers .tuple', $(this)).each(function() {
                         var key, value;
@@ -520,12 +519,6 @@
                     }
                     {% endif %}
 
-                    // Workaround for Firefox bug and a thereby resulting nginx incompatibility
-                    if (method == "LINK") {
-                        method = "POST";
-                        params._method = "LINK";
-                    }
-
                     // prepare final parameters
                     var body = {};
                     if(bodyFormat == 'json' && method != 'GET') {
@@ -571,6 +564,7 @@
                         ajaxOptions.data = formData;
                         ajaxOptions.processData = false;
                         ajaxOptions.contentType = false;
+                        delete(headers['Content-type']);
                     }
 
                     // and trigger the API call
